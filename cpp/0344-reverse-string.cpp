@@ -1,29 +1,27 @@
 /*
-    125 - Valid Palindrome
+    344 - Reverse String
     Two pointers | Middle convergance
     Time: O(n) | Space: O(1)
+    Do not return anything, modify s in-place instead.
 */
 
-#include <string>
+#include <vector>
+#include <utility>
 
 class Solution
 {
 public:
-    bool isPalindrome(std::string s)
+    void reverseString(std::vector<char> &s)
     {
         int l = 0;
         int r = s.size() - 1;
 
         while (l < r)
         {
-            if (s[l] != s[r])
-            {
-                return false;
-            }
+            std::swap(s[l], s[r]);
+
             l++;
             r--;
         }
-
-        return true;
     }
 };

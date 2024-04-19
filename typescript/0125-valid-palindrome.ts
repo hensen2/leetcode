@@ -5,16 +5,16 @@
 */
 
 function isPalindrome(s: string): boolean {
-  let left = 0;
-  let right = s.length - 1;
+  let l = 0;
+  let r = s.length - 1;
 
-  while (left < right) {
-    if (s[left] != s[right]) {
+  while (l < r) {
+    if (s[l] != s[r]) {
       return false;
     }
 
-    left++;
-    right--;
+    l++;
+    r--;
   }
 
   return true;

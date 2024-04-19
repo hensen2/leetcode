@@ -11,13 +11,13 @@ That means, after reversing it, it is still the same string. For example: "abcdc
 
 class Solution:
     def isPalindrome(self, s: str) -> bool:
-        left = 0
-        right = len(s) - 1
+        l = 0
+        r = len(s) - 1
 
-        while left < right:
-            if s[left] != s[right]:
+        while l < r:
+            if s[l] != s[r]:
                 return False
-            left += 1
-            right -= 1
+            l += 1
+            r -= 1
     
         return True
