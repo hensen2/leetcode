@@ -1,8 +1,10 @@
-/**
- * @param {string} s
- * @return {boolean}
- */
-const checkIfPalindrome = function (s) {
+/*
+    125 - Valid Palindrome
+    Two pointers | Middle convergance
+    Time: O(n) | Space: O(1)
+*/
+
+function isPalindrome(s: string): boolean {
   let left = 0;
   let right = s.length - 1;
 
@@ -16,9 +18,4 @@ const checkIfPalindrome = function (s) {
   }
 
   return true;
-};
-
-/*
-    Time complexity: O(n)
-    Space complexity: O(1)
-*/
+}
