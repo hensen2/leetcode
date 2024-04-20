@@ -4,6 +4,7 @@
  * Time: O(n) | Space: O(1)
  * Do not return anything, modify s in-place instead.
  */
+
 function reverseString(s: string[]): void {
   let l = 0;
   let r = s.length - 1;
