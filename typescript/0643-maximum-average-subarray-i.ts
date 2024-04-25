@@ -11,12 +11,12 @@ function findMaxAverage(nums: number[], k: number): number {
     curr += nums[i];
   }
 
-  let res = curr / k;
+  let res = curr;
 
   for (let i = k; i < nums.length; i++) {
     curr += nums[i] - nums[i - k];
-    res = Math.max(res, curr / k);
+    res = Math.max(res, curr);
   }
 
-  return res;
+  return res / k;
 }
