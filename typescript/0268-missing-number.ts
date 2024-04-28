@@ -6,7 +6,7 @@
 
 function missingNumber(nums: number[]): number {
   const n = nums.length;
-  const set: Set<Number> = new Set(nums);
+  const set: Set<number> = new Set(nums);
 
   for (let i = 0; i < n; i++) {
     if (!set.has(i)) {
