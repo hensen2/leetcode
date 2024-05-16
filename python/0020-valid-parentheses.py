@@ -1,6 +1,6 @@
 """
 20 - Valid Parentheses
-Stack
+Stack | Compare strings
 Time: O(n) | Space: O(n)
 
 Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
