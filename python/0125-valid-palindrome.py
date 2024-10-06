@@ -9,6 +9,7 @@ A string is a palindrome if it reads the same forward as backward.
 That means, after reversing it, it is still the same string. For example: "abcdcba", or "racecar".
 """
 
+
 class Solution:
     def isPalindrome(self, s: str) -> bool:
         l = 0
@@ -19,5 +20,5 @@ class Solution:
                 return False
             l += 1
             r -= 1
-    
+
         return True
