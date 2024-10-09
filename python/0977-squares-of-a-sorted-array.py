@@ -1,6 +1,6 @@
 """
-977 - Squares of a Sorted Array
-Two pointers | Middle convergance
+977 - Squares of a Sorted Array [Easy]
+Two Pointers | Middle Convergence | Array | Sorting
 Time: O(n) | Space: O(1)
 
 Given an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.
@@ -8,20 +8,23 @@ Given an integer array nums sorted in non-decreasing order, return an array of t
 
 from typing import List
 
+
 class Solution:
     def sortedSquares(self, nums: List[int]) -> List[int]:
         n = len(nums)
-        l, r = 0, n - 1
+        i = 0
+        j = n - 1
         res = [0] * n
 
-        while l <= r:
-            left, right = abs(nums[l]), abs(nums[r])
+        while i <= j:
+            left = abs(nums[i])
+            right = abs(nums[j])
 
             if left > right:
-                res[r - l] = nums[l] ** 2
-                l += 1
+                res[j - i] = nums[i] ** 2
+                i += 1
             else:
-                res[r - l] = nums[r] ** 2
-                r -= 1
+                res[j - i] = nums[j] ** 2
+                j -= 1
 
         return res

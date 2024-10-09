@@ -1,6 +1,6 @@
 /**
  * 125 - Valid Palindrome
- * Two pointers | Middle convergance
+ * Two pointers | Middle Convergence
  * Time: O(n) | Space: O(1)
  * @param {string} s
  * @return {boolean}

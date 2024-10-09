@@ -1,6 +1,6 @@
 """
 125 - Valid Palindrome
-Two pointers | Middle convergance
+Two pointers | Middle Convergence
 Time: O(n) | Space: O(1)
 
 Given a string s, return true if it is a palindrome, false otherwise.
@@ -12,13 +12,13 @@ That means, after reversing it, it is still the same string. For example: "abcdc
 
 class Solution:
     def isPalindrome(self, s: str) -> bool:
-        l = 0
-        r = len(s) - 1
+        left = 0
+        right = len(s) - 1
 
-        while l < r:
-            if s[l] != s[r]:
+        while left < right:
+            if s[left] != s[right]:
                 return False
-            l += 1
-            r -= 1
+            left += 1
+            right -= 1
 
         return True

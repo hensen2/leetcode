@@ -1,6 +1,6 @@
 /**
  * 977 - Squares of a Sorted Array
- * Two pointers | Middle convergance
+ * Two pointers | Middle Convergence
  * Time: O(n) | Space: O(1)
  * @param {number[]} nums
  * @return {number[]}

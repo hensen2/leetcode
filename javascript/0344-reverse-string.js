@@ -1,6 +1,6 @@
 /**
  * 344 - Reverse String
- * Two pointers | Middle convergance
+ * Two pointers | Middle Convergence
  * Time: O(n) | Space: O(1)
  * @param {character[]} s
  * @return {void} Do not return anything, modify s in-place instead.
