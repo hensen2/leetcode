@@ -1,6 +1,6 @@
 """
-2090 - K Radius Subarray Averages
-Sliding Window | Fixed size window
+2090 - K Radius Subarray Averages [Medium]
+Prefix Sum | Sliding Window | Fixed Window Size | Array
 Time: O(n) | Space: O(1)
 
 You are given a 0-indexed array nums of n integers, and an integer k.
@@ -14,6 +14,7 @@ The average of x elements is the sum of the x elements divided by x, using integ
 """
 
 from typing import List
+
 
 class Solution:
     def getAverages(self, nums: List[int], k: int) -> List[int]:

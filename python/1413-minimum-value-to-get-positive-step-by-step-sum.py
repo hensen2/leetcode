@@ -1,6 +1,6 @@
 """
-1413 - Minimum Value to Get Positive Step by Step Sum
-Prefix Sum | Greedy
+1413 - Minimum Value to Get Positive Step by Step Sum [Easy]
+Prefix Sum | Array
 Time: O(n) | Space: O(1)
 
 Given an array of integers nums, you start with an initial positive value startValue.
@@ -12,6 +12,7 @@ Return the minimum positive value of startValue such that the step by step sum i
 
 from typing import List
 
+
 class Solution:
     def minStartValue(self, nums: List[int]) -> int:
         curr = 0
@@ -21,4 +22,4 @@ class Solution:
             curr += nums[i]
             minSum = min(minSum, curr)
 
-        return 1 - minSum # minSum + x = 1
+        return 1 - minSum  # minSum + x = 1
