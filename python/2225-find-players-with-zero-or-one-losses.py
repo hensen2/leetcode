@@ -1,6 +1,6 @@
 """
-2225 - Find Players With Zero or One Losses
-Hashmap | Count frequencies
+2225 - Find Players With Zero or One Losses [Medium]
+Hash Table | Counting | Sorting | Array
 Time: O(n*log(n)) | Space: O(n)
 Time complexity is O(n*log(n)) for sorting
 
@@ -9,10 +9,12 @@ You are given an integer array matches where matches[i] = [winneri, loseri] indi
 Return a list answer of size 2 where:
 - answer[0] is a list of all players that have not lost any matches.
 - answer[1] is a list of all players that have lost exactly one match.
+
 The values in the two lists should be returned in increasing order.
 """
 
 from typing import List
+
 
 class Solution:
     def findWinners(self, matches: List[List[int]]) -> List[List[int]]:

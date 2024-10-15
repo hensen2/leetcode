@@ -1,6 +1,6 @@
 """
-92 - Reversed Linked List II
-Linked list | Pointer manipulation
+92 - Reversed Linked List II [Medium]
+Linked List | Reversing Nodes
 Time: O(n) | Space: O(1)
 
 Given the head of a singly linked list and two integers left and right where left <= right, reverse the nodes of the list from position left to position right, and return the reversed list.
@@ -8,11 +8,13 @@ Given the head of a singly linked list and two integers left and right where lef
 
 from typing import Optional
 
+
 # Definition for singly-linked list.
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
+
 
 class Solution:
     def reverseBetween(
@@ -31,7 +33,7 @@ class Solution:
             curr = curr.next
 
         # two pointers that will fix the final connections
-        tail, con = curr, prev
+        tail, conn = curr, prev
 
         for _ in range(right - left + 1):
             next_node = curr.next  # first, make sure we don't lose the next node
@@ -40,8 +42,8 @@ class Solution:
             curr = next_node
 
         # Adjust the final connections
-        if con:
-            con.next = prev
+        if conn:
+            conn.next = prev
         else:
             head = prev
 
