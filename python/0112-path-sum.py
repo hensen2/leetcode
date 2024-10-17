@@ -1,15 +1,16 @@
 """
-112 - Path Sum
-Binary tree | DFS | Recursion
-Time: O(n) | Space: O(n)
-Space is O(n) because the tree could be a straight line.
+112 - Path Sum [Easy]
+Binary Tree | DFS | Recursion
+Time: O(n) | Space: O(n) because the tree could be a straight line
 
-Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path such that adding up all the values along the path equals targetSum.
+Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf 
+path such that adding up all the values along the path equals targetSum.
 
 A leaf is a node with no children.
 """
 
 from typing import Optional
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -17,6 +18,7 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
 
 class Solution:
     def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:

@@ -1,14 +1,15 @@
 """
-199 - Binary Tree Right Side View
-Binary tree | BFS | Deque
-Time: O(n) | Space: O(n)
-Space is O(n) because the queue could hold up to n/2 nodes.
+199 - Binary Tree Right Side View [Medium]
+Binary Tree | BFS | Queue
+Time: O(n) | Space: O(n) because the queue could hold up to n/2 nodes
 
-Given the root of a binary tree, imagine yourself standing on the right side of it, return the values of the nodes you can see ordered from top to bottom.
+Given the root of a binary tree, imagine yourself standing on the right side of it, return the values 
+of the nodes you can see ordered from top to bottom.
 """
 
 from typing import Optional, List
 from collections import deque
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -16,6 +17,7 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
 
 class Solution:
     def rightSideView(self, root: Optional[TreeNode]) -> List[int]:

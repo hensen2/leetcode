@@ -1,14 +1,14 @@
 """
-515 - Find Largest Value in Each Tree Row
-Binary tree | BFS | Deque
-Time: O(n) | Space: O(n)
-Space is O(n) because the queue could hold up to n/2 nodes.
+515 - Find Largest Value in Each Tree Row [Medium]
+Binary Tree | BFS | Queue
+Time: O(n) | Space: O(n) because the queue could hold up to n/2 nodes
 
 Given the root of a binary tree, return an array of the largest value in each row of the tree (0-indexed).
 """
 
 from typing import Optional, List
 from collections import deque
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -17,11 +17,12 @@ class TreeNode:
         self.left = left
         self.right = right
 
+
 class Solution:
     def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
         if not root:
             return []
-        
+
         ans = []
         queue = deque([root])
 

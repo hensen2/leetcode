@@ -1,14 +1,15 @@
 """
-103 - Binary Tree Zigzag Level Order Traversal
-Binary tree | BFS | Deques
-Time: O(n) | Space: O(n)
-Space is O(n) because the queues could hold up to 2n/2 nodes.
+103 - Binary Tree Zigzag Level Order Traversal [Medium]
+Binary Tree | BFS | Queue
+Time: O(n) | Space: O(n) because the queues could hold up to 2*(n/2) nodes
 
-Given the root of a binary tree, return the zigzag level order traversal of its nodes' values. (i.e., from left to right, then right to left for the next level and alternate between).
+Given the root of a binary tree, return the zigzag level order traversal of its nodes' values. (i.e., from 
+left to right, then right to left for the next level and alternate between).
 """
 
 from typing import Optional, List
 from collections import deque
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -16,6 +17,7 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
 
 class Solution:
     def zigzagLevelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
@@ -37,7 +39,7 @@ class Solution:
                     vals.append(node.val)
                 else:
                     vals.appendleft(node.val)
-                    
+
                 if node.left:
                     queue.append(node.left)
                 if node.right:
@@ -45,5 +47,5 @@ class Solution:
 
             isLeft = not isLeft
             ans.append(vals)
-        
-        return ans    
+
+        return ans

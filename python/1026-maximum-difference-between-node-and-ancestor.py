@@ -1,15 +1,16 @@
 """
-1026 - Maximum Difference Between Node and Ancestor
-Binary tree | DFS | Recursion
-Time: O(n) | Space: O(n)
-Space is O(n) because the tree could be a straight line.
+1026 - Maximum Difference Between Node and Ancestor [Medium]
+Binary Tree | DFS | Recursion
+Time: O(n) | Space: O(n) because the tree could be a straight line
 
-Given the root of a binary tree, find the maximum value v for which there exist different nodes a and b where v = |a.val - b.val| and a is an ancestor of b.
+Given the root of a binary tree, find the maximum value v for which there exist different nodes a and b 
+where v = |a.val - b.val| and a is an ancestor of b.
 
 A node a is an ancestor of b if either: any child of a is equal to b or any child of a is an ancestor of b.
 """
 
 from typing import Optional
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -17,6 +18,7 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
 
 class Solution:
     def maxAncestorDiff(self, root: Optional[TreeNode]) -> int:

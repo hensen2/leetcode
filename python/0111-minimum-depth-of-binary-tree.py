@@ -1,8 +1,7 @@
 """
-111 - Minimum Depth of Binary Tree
-Binary tree | DFS | Recursion
-Time: O(n) | Space: O(n)
-Space is O(n) because the tree could be a straight line.
+111 - Minimum Depth of Binary Tree [Easy]
+Binary Tree | DFS | Recursion
+Time: O(n) | Space: O(n) because the tree could be a straight line
 
 Given a binary tree, find its minimum depth.
 
@@ -13,12 +12,14 @@ Note: A leaf is a node with no children.
 
 from typing import Optional
 
+
 # Definition for a binary tree node.
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
+
 
 class Solution:
     def minDepth(self, root: Optional[TreeNode]) -> int:
