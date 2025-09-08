@@ -1,0 +1,14 @@
+/**
+ * 1480 - Running Sum of 1D Array
+ * Prefix Sum
+ * Time: O(n) | Space: O(1)
+ * @param {number[]} nums
+ * @return {number[]}
+ */
+const runningSum = function (nums) {
+  for (let i = 1; i < nums.length; i++) {
+    nums[i] += nums[i - 1];
+  }
+
+  return nums;
+};
