@@ -1,2 +1,31 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Compiled Python bytecode
+__pycache__/
+*.pyc
+
+# Distribution and build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# OS generated files
 .DS_Store
-.vscode/*
+Thumbs.db
