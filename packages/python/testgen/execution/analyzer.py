@@ -8,8 +8,8 @@ import statistics
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from packages.python.testgen.core.config import Config
-from packages.python.testgen.core.generators import IntegerGenerator
+from ..core.config import Config
+from ..core.generators import IntegerGenerator
 
 
 class PerformanceAnalyzer:

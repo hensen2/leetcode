@@ -1,14 +1,13 @@
-#!/usr/bin/env python3
 """
 Command-line interface for test case generator
 Separated from core logic for better modularity
 """
 
 import argparse
-import datetime
 import json
 import random
 import sys
+from datetime import datetime
 from typing import Any, List, Optional
 
 from ..core.config import Config
@@ -1123,43 +1122,46 @@ Advanced Options:
             return None
 
 
-def main():
+def main(args=None):
     """Enhanced main entry point"""
     cli = EnhancedCLI()
 
-    if len(sys.argv) == 1:
+    if args is None:
+        args = sys.argv[1:]
+
+    if len(args) == 0:
+        # No arguments provided, show usage
         print("🧪 Enhanced Test Case Generator for DSA Problems")
         print("=" * 50)
         print("\n🚀 Quick Start:")
         print(
-            "  python cli.py array -n 10 -e           # Generate arrays with edge cases"
+            "  python -m testgen array -n 10 -e           # Generate arrays with edge cases"
         )
-        print(
-            "  python cli.py string --palindrome -v   # Generate palindromes with details"
-        )
-        print("  python cli.py validate --validate-function my_solution.two_sum")
+        print("  python -m testgen string --palindrome -n 5 # Generate palindromes")
+        print("  python -m testgen tree --balanced -n 3     # Generate balanced trees")
         print("\n🔧 Available Types: array, string, matrix, tree, graph, linked_list")
-        print("🆘 For help: python cli.py -h")
-        print("\n💡 New Features:")
-        print("  ✅ Enhanced error reporting with suggestions")
-        print("  ✅ Test case validation and benchmarking")
-        print("  ✅ Rich output formatting and analysis")
-        print("  ✅ Detailed progress tracking")
+        print("🆘 For help: python -m testgen -h")
+        print("\n💡 Enhanced Features:")
+        print("  ✅ Memory-efficient generation with large ranges")
+        print("  ✅ Rich error handling with context and suggestions")
+        print("  ✅ Progress indicators and detailed analysis")
+        print("  ✅ Multiple output formats (JSON, text)")
         return
 
     try:
-        cli.run()
+        # Run the enhanced CLI with arguments
+        cli.run(args)
     except KeyboardInterrupt:
         print("\n\n⏹️  Operation cancelled by user")
         print("🔄 Use --output to save partial results next time")
     except Exception as e:
         print(f"\n💥 Unexpected error: {e}")
         print("🐛 Please report this issue with the following details:")
-        print(f"   Command: {' '.join(sys.argv)}")
+        print(f"   Command: python -m testgen {' '.join(args)}")
         print(f"   Error: {type(e).__name__}: {e}")
 
         # Check if verbose mode for full traceback
-        if "-v" in sys.argv or "--verbose" in sys.argv:
+        if "-v" in args or "--verbose" in args:
             import traceback
 
             print("\n🔍 Full traceback:")
@@ -1168,21 +1170,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# def main():
-#     """Main entry point for CLI"""
-#     cli = CLI()
-
-#     if len(sys.argv) == 1:
-#         # No arguments provided, show usage
-#         print("Test Case Generator for DSA Problems")
-#         print("=" * 40)
-#         print("\nUsage: python cli.py <type> [options]")
-#         print("\nTypes: array, string, matrix, tree, graph, linked_list, edge_cases")
-#         print("\nFor help: python cli.py -h")
-#     else:
-#         cli.run()
-
-
-# if __name__ == "__main__":
-#     main()

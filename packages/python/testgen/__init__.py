@@ -1,8 +1,6 @@
 __version__ = "0.1.0"
 __author__ = "Matt Hensen"
 
-from error_handling.handlers import ErrorHandler
-
 # Import main classes for easy access
 from .core.generators import (
     GraphGenerator,
@@ -20,6 +18,7 @@ from .core.models import (
     TestSuiteResult,
     TreeProperties,
 )
+from .error_handling.handlers import ErrorHandler
 from .execution.runner import EnhancedTestRunner as TestRunner
 
 # Main facade class for easy usage
