@@ -16,228 +16,8 @@ from ..error_handling.handlers import (
     ErrorHandler,
     ErrorSeverity,
     ExecutionError,
+    TimeoutError,
 )
-from ..error_handling.handlers import TimeoutError as CustomTimeoutError
-
-
-class TimeoutError(Exception):
-    """Exception raised when test execution times out"""
-
-    pass
-
-
-@contextmanager
-def timeout_handler(seconds: float):
-    """Context manager for handling timeouts"""
-
-    def timeout_occurred(signum, frame):
-        raise TimeoutError(f"Execution timed out after {seconds} seconds")
-
-    # Set up signal handler
-    old_handler = signal.signal(signal.SIGALRM, timeout_occurred)
-    signal.setitimer(signal.ITIMER_REAL, seconds)
-
-    try:
-        yield
-    finally:
-        # Restore original handler
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, old_handler)
-
-
-class TestRunner:
-    """Execute test cases with timeout and error handling"""
-
-    def __init__(self, timeout: float = Config.DEFAULT_TIMEOUT):
-        """
-        Initialize test runner
-
-        Args:
-            timeout: Maximum execution time per test in seconds
-        """
-        self.timeout = min(timeout, Config.MAX_TIMEOUT)
-        self.results: List[TestRunResult] = []
-
-    def run_test(
-        self,
-        func: Callable,
-        test_input: Any,
-        expected_output: Optional[Any] = None,
-        custom_comparator: Optional[Callable[[Any, Any], bool]] = None,
-    ) -> TestRunResult:
-        """
-        Run a single test case
-
-        Args:
-            func: Function to test
-            test_input: Input for the function
-            expected_output: Expected output (if any)
-            custom_comparator: Custom function to compare outputs
-
-        Returns:
-            TestRunResult object with test execution details
-        """
-        result = TestRunResult(
-            input=test_input,
-            expected=expected_output,
-            actual=None,
-            passed=False,
-            error=None,
-            execution_time=None,
-        )
-
-        try:
-            start_time = time.perf_counter()
-
-            # Execute function with appropriate input handling
-            actual_output = self._execute_function(func, test_input)
-
-            execution_time = time.perf_counter() - start_time
-
-            result.actual = actual_output
-            result.execution_time = execution_time
-
-            # Check for timeout
-            if execution_time > self.timeout:
-                result.error = "TIMEOUT"
-            elif expected_output is not None:
-                # Compare outputs
-                if custom_comparator:
-                    result.passed = custom_comparator(actual_output, expected_output)
-                else:
-                    result.passed = actual_output == expected_output
-            else:
-                # No expected output, consider passed if no error
-                result.passed = True
-
-        except TimeoutError:
-            result.error = "TIMEOUT"
-        except Exception as e:
-            result.error = str(e)
-            # Optionally include traceback for debugging
-            # result.error = traceback.format_exc()
-
-        self.results.append(result)
-        return result
-
-    def run_test_suite(
-        self,
-        func: Callable,
-        test_cases: List[Any],
-        expected_outputs: Optional[List[Any]] = None,
-        custom_comparator: Optional[Callable[[Any, Any], bool]] = None,
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> TestSuiteResult:
-        """
-        Run multiple test cases
-
-        Args:
-            func: Function to test
-            test_cases: List of test inputs
-            expected_outputs: List of expected outputs
-            custom_comparator: Custom comparison function
-            progress_callback: Callback for progress updates (current, total)
-
-        Returns:
-            TestSuiteResult with summary statistics
-        """
-        if expected_outputs is None:
-            expected_outputs = [None] * len(test_cases)
-
-        if len(test_cases) != len(expected_outputs):
-            raise ValueError(
-                f"Mismatch between test cases ({len(test_cases)}) "
-                f"and expected outputs ({len(expected_outputs)})"
-            )
-
-        results = []
-        passed = failed = errors = timeouts = 0
-        total_time = 0.0
-
-        for i, (test_input, expected) in enumerate(zip(test_cases, expected_outputs)):
-            if progress_callback:
-                progress_callback(i + 1, len(test_cases))
-
-            result = self.run_test(func, test_input, expected, custom_comparator)
-            results.append(result)
-
-            if result.execution_time:
-                total_time += result.execution_time
-
-            if result.error == "TIMEOUT":
-                timeouts += 1
-            elif result.error:
-                errors += 1
-            elif result.passed:
-                passed += 1
-            else:
-                failed += 1
-
-        return TestSuiteResult(
-            total=len(test_cases),
-            passed=passed,
-            failed=failed,
-            errors=errors,
-            timeout=timeouts,
-            results=results,
-            total_time=total_time,
-        )
-
-    def _execute_function(self, func: Callable, test_input: Any) -> Any:
-        """
-        Execute function with proper input handling
-
-        Args:
-            func: Function to execute
-            test_input: Input data
-
-        Returns:
-            Function output
-        """
-        if isinstance(test_input, tuple):
-            return func(*test_input)
-        elif isinstance(test_input, dict):
-            return func(**test_input)
-        else:
-            return func(test_input)
-
-    def print_summary(self, result: TestSuiteResult) -> None:
-        """
-        Print test execution summary
-
-        Args:
-            result: TestSuiteResult to summarize
-        """
-        print("\n" + "=" * 60)
-        print("TEST SUMMARY")
-        print("=" * 60)
-        print(f"Total Tests: {result.total}")
-        print(f"Passed: {result.passed} ({result.pass_rate:.1f}%)")
-        print(f"Failed: {result.failed}")
-        print(f"Errors: {result.errors}")
-        print(f"Timeouts: {result.timeout}")
-        print(f"Total Time: {result.total_time:.3f}s")
-
-        # Show failed/error cases if any
-        if result.failed > 0 or result.errors > 0:
-            print("\nFailed/Error Cases:")
-            for i, test_result in enumerate(result.results):
-                if not test_result.passed or test_result.error:
-                    error_msg = test_result.error or "Wrong output"
-                    print(f"  Test {i}: {error_msg}")
-                    if i >= 5:  # Limit output
-                        remaining = sum(
-                            1
-                            for r in result.results[i + 1 :]
-                            if not r.passed or r.error
-                        )
-                        if remaining > 0:
-                            print(f"  ... and {remaining} more")
-                        break
-
-    def clear_results(self) -> None:
-        """Clear stored test results"""
-        self.results = []
 
 
 class CustomComparators:
@@ -285,14 +65,16 @@ class CustomComparators:
         )
 
 
-class EnhancedTestRunner:
-    """
-    Test runner with integrated sophisticated error handling
-    REPLACES the basic error handling in runner.py
-    """
+class TestRunner:
+    """Test runner with integrated timeout and sophisticated error handling"""
 
     def __init__(self, timeout: float = Config.DEFAULT_TIMEOUT):
-        """Initialize with error handling integration"""
+        """
+        Initialize test runner with error handling integration
+
+        Args:
+            timeout: Maximum execution time per test in seconds
+        """
         self.timeout = min(timeout, Config.MAX_TIMEOUT)
         self.results: List[TestRunResult] = []
 
@@ -307,7 +89,7 @@ class EnhancedTestRunner:
             "recovered_errors": 0,
         }
 
-    def run_test(
+    def run(
         self,
         func: Callable,
         test_input: Any,
@@ -317,7 +99,17 @@ class EnhancedTestRunner:
     ) -> TestRunResult:
         """
         Run a single test case with enhanced error handling
-        REPLACES the basic run_test method
+
+        Args:
+            func: Function to test
+            test_input: Input for the function
+            expected_output: Expected output (if any)
+            custom_comparator: Custom function to compare outputs
+            test_name: Custom test name string
+
+
+        Returns:
+            TestRunResult object with test execution details
         """
         # Create rich error context
         error_context = ErrorContext(
@@ -383,7 +175,7 @@ class EnhancedTestRunner:
             else:
                 result.passed = True  # No expected output means success if no error
 
-        except CustomTimeoutError as e:
+        except TimeoutError as e:
             self._handle_timeout_error(e, result, error_context)
         except ExecutionError as e:
             self._handle_execution_error(e, result, error_context)
@@ -407,7 +199,17 @@ class EnhancedTestRunner:
     ) -> TestSuiteResult:
         """
         Run multiple test cases with enhanced error reporting
-        REPLACES the basic run_test_suite method
+
+        Args:
+            func: Function to test
+            test_cases: List of test inputs
+            expected_outputs: List of expected outputs
+            custom_comparator: Custom comparison function
+            progress_callback: Callback for progress updates (current, total)
+            test_names: List of custom test name strings
+
+        Returns:
+            TestSuiteResult with summary statistics
         """
         if expected_outputs is None:
             expected_outputs = [None] * len(test_cases)
@@ -478,8 +280,15 @@ class EnhancedTestRunner:
         self, func: Callable, test_input: Any, context: ErrorContext
     ) -> Any:
         """
-        Execute function with detailed error context
-        REPLACES basic _execute_function
+        Execute function with proper input handling and detailed error context
+
+        Args:
+            func: Function to execute
+            test_input: Input data
+            context: Context information for an error
+
+        Returns:
+            Function output
         """
         try:
             if isinstance(test_input, tuple):
@@ -529,7 +338,7 @@ class EnhancedTestRunner:
         """Enhanced timeout context with better error reporting"""
 
         def timeout_occurred(signum, frame):
-            raise CustomTimeoutError(
+            raise TimeoutError(
                 f"Test execution timed out after {seconds} seconds",
                 timeout_duration=seconds,
                 component="TestRunner",
@@ -546,7 +355,7 @@ class EnhancedTestRunner:
             signal.signal(signal.SIGALRM, old_handler)
 
     def _handle_timeout_error(
-        self, error: CustomTimeoutError, result: TestRunResult, context: ErrorContext
+        self, error: TimeoutError, result: TestRunResult, context: ErrorContext
     ):
         """Handle timeout errors with detailed logging"""
         self.error_handler.handle_error(error, context)
@@ -614,8 +423,10 @@ class EnhancedTestRunner:
 
     def print_enhanced_summary(self, result: TestSuiteResult) -> None:
         """
-        Print enhanced test summary with error analysis
-        REPLACES basic print_summary
+        Print enhanced test execution summary with error analysis
+
+        Args:
+            result: TestSuiteResult to summarize
         """
         print("\n" + "=" * 70)
         print("🧪 ENHANCED TEST SUMMARY")
@@ -677,7 +488,15 @@ class EnhancedTestRunner:
         print("=" * 70)
 
     def get_error_report(self, format: str = "text") -> str:
-        """Get detailed error report from the sophisticated error system"""
+        """
+        Get detailed error report from the sophisticated error system
+
+        Args:
+            format: Format for error report (defaults to text)
+
+        Returns:
+            Error report string
+        """
         from error_handling import ErrorReporter
 
         reporter = ErrorReporter(self.error_handler)
@@ -690,7 +509,7 @@ class EnhancedTestRunner:
         self.error_stats = {key: 0 for key in self.error_stats}
 
 
-class ParallelTestRunner(EnhancedTestRunner):
+class ParallelTestRunner(TestRunner):
     """Test runner with parallel execution support"""
 
     def __init__(self, timeout: float = Config.DEFAULT_TIMEOUT, max_workers: int = 4):

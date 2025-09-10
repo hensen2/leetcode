@@ -4,22 +4,9 @@ Handles trees, linked lists, graphs, and other complex structures
 """
 
 from collections import deque
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional
 
-
-class TreeNode(Protocol):
-    """Protocol for tree nodes"""
-
-    val: Any
-    left: Optional["TreeNode"]
-    right: Optional["TreeNode"]
-
-
-class ListNode(Protocol):
-    """Protocol for linked list nodes"""
-
-    val: Any
-    next: Optional["ListNode"]
+from .models import ListNode, TreeNode
 
 
 class TreeSerializer:
@@ -58,13 +45,12 @@ class TreeSerializer:
         return result
 
     @staticmethod
-    def from_array(arr: List[Optional[int]], node_class: type) -> Optional[TreeNode]:
+    def from_array(arr: List[Optional[int]]) -> Optional[TreeNode]:
         """
         Convert array to tree (level-order)
 
         Args:
             arr: Array representation of tree
-            node_class: Class to use for creating nodes
 
         Returns:
             Root node of reconstructed tree
@@ -72,7 +58,7 @@ class TreeSerializer:
         if not arr or arr[0] is None:
             return None
 
-        root = node_class(arr[0])
+        root = TreeNode(arr[0])
         queue = deque([root])
         i = 1
 
@@ -81,13 +67,13 @@ class TreeSerializer:
 
             # Process left child
             if i < len(arr) and arr[i] is not None:
-                node.left = node_class(arr[i])
+                node.left = TreeNode(arr[i])
                 queue.append(node.left)
             i += 1
 
             # Process right child
             if i < len(arr) and arr[i] is not None:
-                node.right = node_class(arr[i])
+                node.right = TreeNode(arr[i])
                 queue.append(node.right)
             i += 1
 
@@ -197,14 +183,13 @@ class LinkedListSerializer:
 
     @staticmethod
     def from_array(
-        arr: List[Any], node_class: type, create_cycle_at: Optional[int] = None
+        arr: List[Any], create_cycle_at: Optional[int] = None
     ) -> Optional[ListNode]:
         """
         Convert array to linked list
 
         Args:
             arr: Array of values
-            node_class: Class to use for creating nodes
             create_cycle_at: Index to create cycle at (if specified)
 
         Returns:
@@ -213,14 +198,14 @@ class LinkedListSerializer:
         if not arr:
             return None
 
-        dummy = node_class(0)
+        dummy = ListNode(0)
         current = dummy
         nodes = []
 
         for val in arr:
             if isinstance(val, str) and val == LinkedListSerializer.CYCLE_MARKER:
                 break
-            new_node = node_class(val)
+            new_node = ListNode(val)
             current.next = new_node
             current = new_node
             nodes.append(new_node)

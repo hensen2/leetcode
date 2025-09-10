@@ -1,4 +1,3 @@
-# tests/validation/test_error_context.py
 """
 Validation tests for enhanced error handling from last session
 
@@ -19,7 +18,7 @@ from testgen.error_handling.handlers import (
     TimeoutError,
     ValidationError,
 )
-from testgen.execution.runner import EnhancedTestRunner as TestRunner
+from testgen.execution.runner import TestRunner
 
 
 class TestEnhancedErrorContext:
@@ -33,15 +32,19 @@ class TestEnhancedErrorContext:
             ErrorHandler,
         )
 
-        def failing_function(arr):
-            raise ValueError("Division by zero in algorithm")
+        runner = TestRunner()
+        test_input = [1, 1, 2, 3]
+
+        # Test with failing function
+        def always_fails(arr):
+            raise ValueError("Test failure for verification")
 
         # Test the error handler with rich context
         handler = ErrorHandler()
-        test_input = [1, 2, 3]
 
         try:
-            failing_function(test_input)
+            runner.run(always_fails, test_input)
+
         except Exception as e:
             # Create rich error context
             context = ErrorContext(
@@ -88,7 +91,8 @@ class TestEnhancedErrorContext:
 
     def test_timeout_error_context_information(self):
         """Test that timeout errors include timing and context info"""
-        runner = TestRunner()
+        runner = TestRunner(0.5)  # 0.5s timeout trigger
+        test_input = [1, 1, 2, 3]
 
         def slow_function(arr):
             import time
@@ -96,31 +100,20 @@ class TestEnhancedErrorContext:
             time.sleep(2.0)  # Intentionally slow
             return sum(arr)
 
-        constraints = Constraints(min_value=1, max_value=5, is_unique=False)
-        test_suite = TestSuite(
-            function=slow_function,
-            constraints=constraints,
-            num_tests=1,
-            timeout=0.5,  # Short timeout to trigger timeout error
-        )
-
-        result = runner.run(test_suite)
+        result = runner.run(slow_function, test_input)
 
         # Should have timeout failures
-        assert not result.success
-        assert len(result.failures) > 0
-
-        failure = result.failures[0]
-        error_msg = failure.error_message
+        assert not result.passed
+        assert result.error
 
         # Should contain timeout-specific context
         assert any(
-            keyword in error_msg.lower()
+            keyword in result.error.lower()
             for keyword in ["timeout", "duration", "exceeded", "time"]
         )
 
         # Should include timing information
-        assert "0.5" in error_msg or "timeout" in error_msg.lower()
+        assert "0.5" in result.error or "timeout" in result.error.lower()
 
     def test_validation_error_context_details(self):
         """Test that validation errors include constraint details"""
@@ -137,7 +130,7 @@ class TestEnhancedErrorContext:
 
         # Try to generate more unique values than possible
         with pytest.raises(ValueError) as exc_info:
-            generator.generate_batch(constraints, size=10)
+            generator.generate_array(size=10, constraints=constraints)
 
         error_msg = str(exc_info.value)
 

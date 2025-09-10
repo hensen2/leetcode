@@ -3,6 +3,10 @@ Main facade class that provides simple interface to all functionality
 This replaces the current test_case_generator.py
 """
 
+from typing import List
+
+from .core.models import GraphData, TestSuiteResult, TreeNode
+
 
 class TestCaseGenerator:
     """
@@ -19,7 +23,7 @@ class TestCaseGenerator:
             StringGenerator,
             TreeGenerator,
         )
-        from .execution.runner import EnhancedTestRunner
+        from .execution.runner import TestRunner
         from .patterns.edge_cases import EdgeCaseGenerator
 
         # Initialize generators
@@ -32,26 +36,26 @@ class TestCaseGenerator:
         self.edge_gen = EdgeCaseGenerator()
 
         # Initialize runner
-        self.runner = EnhancedTestRunner()
+        self.runner = TestRunner()
 
         self.seed = seed
 
     # Simple generation methods
-    def generate_array(self, size=None, **kwargs):
+    def generate_array(self, size=None, **kwargs) -> List[int]:
         """Generate integer array with optional constraints"""
         from .core.models import Constraints
 
         constraints = Constraints(**kwargs) if kwargs else None
         return self.int_gen.generate_array(size, constraints)
 
-    def generate_string(self, length=None, **kwargs):
+    def generate_string(self, length=None, **kwargs) -> str:
         """Generate string with optional constraints"""
         from .core.models import Constraints
 
         constraints = Constraints(**kwargs) if kwargs else None
         return self.str_gen.generate(length, constraints)
 
-    def generate_tree(self, size=10, **kwargs):
+    def generate_tree(self, size=10, **kwargs) -> TreeNode | None:
         """Generate binary tree"""
         from .core.models import Constraints, TreeProperties
 
@@ -64,7 +68,7 @@ class TestCaseGenerator:
         )
         return self.tree_gen.generate(props, constraints)
 
-    def generate_graph(self, num_nodes=10, **kwargs):
+    def generate_graph(self, num_nodes=10, **kwargs) -> GraphData:
         """Generate graph"""
         from .core.models import GraphProperties
 
@@ -76,6 +80,6 @@ class TestCaseGenerator:
         return self.edge_gen.get_edge_cases(problem_type)
 
     # Test execution
-    def test_function(self, func, test_cases, expected_outputs=None):
+    def test_function(self, func, test_cases, expected_outputs=None) -> TestSuiteResult:
         """Test a function with generated test cases"""
         return self.runner.run_test_suite(func, test_cases, expected_outputs)

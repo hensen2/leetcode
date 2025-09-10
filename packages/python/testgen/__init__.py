@@ -19,7 +19,7 @@ from .core.models import (
     TreeProperties,
 )
 from .error_handling.handlers import ErrorHandler
-from .execution.runner import EnhancedTestRunner as TestRunner
+from .execution.runner import TestRunner
 
 # Main facade class for easy usage
 from .facade import TestCaseGenerator

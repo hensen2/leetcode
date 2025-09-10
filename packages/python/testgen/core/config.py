@@ -7,7 +7,7 @@ Centralizes all magic numbers and default values
 class Config:
     """Central configuration for test case generator"""
 
-    # Timing constraints
+    # Timing constraints (in seconds)
     DEFAULT_TIMEOUT = 1.0
     MAX_TIMEOUT = 10.0
 

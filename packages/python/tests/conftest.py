@@ -16,7 +16,7 @@ from testgen.core.generators import IntegerGenerator, StringGenerator, TreeGener
 # Import testgen components for fixtures
 from testgen.core.models import Constraints, GraphProperties, TreeProperties
 from testgen.error_handling.handlers import ErrorHandler
-from testgen.execution.runner import EnhancedTestRunner as TestRunner
+from testgen.execution.runner import TestRunner
 from testgen.plugins import PluginRegistry, get_registry
 
 # ============== Basic Fixtures ==============

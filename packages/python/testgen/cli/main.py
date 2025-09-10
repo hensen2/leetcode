@@ -22,7 +22,7 @@ from ..core.generators import (
 from ..core.models import Constraints, GraphProperties, TreeProperties
 from ..core.serializers import LinkedListSerializer, TreeSerializer
 from ..error_handling.handlers import ErrorReporter
-from ..execution.runner import EnhancedTestRunner as TestRunner
+from ..execution.runner import TestRunner
 from ..patterns.edge_cases import EdgeCaseGenerator
 
 
@@ -31,328 +31,15 @@ class CLI:
 
     def __init__(self):
         self.edge_gen = EdgeCaseGenerator()
-
-    def create_parser(self) -> argparse.ArgumentParser:
-        """Create and configure argument parser"""
-        parser = argparse.ArgumentParser(
-            description="Generate test cases for DSA problems",
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            epilog=self._get_examples(),
-        )
-
-        # Main arguments
-        parser.add_argument(
-            "type",
-            choices=[
-                "array",
-                "string",
-                "matrix",
-                "tree",
-                "graph",
-                "linked_list",
-                "edge_cases",
-            ],
-            help="Type of test data to generate",
-        )
-
-        parser.add_argument(
-            "-n",
-            "--num",
-            type=int,
-            default=Config.CLI_DEFAULT_NUM_TESTS,
-            help=f"Number of test cases to generate (default: {Config.CLI_DEFAULT_NUM_TESTS})",
-        )
-
-        parser.add_argument(
-            "-e", "--edge-cases", action="store_true", help="Include edge cases"
-        )
-
-        parser.add_argument(
-            "-o", "--output", type=str, help="Output file for test cases (JSON format)"
-        )
-
-        parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
-
-        # Size constraints
-        parser.add_argument(
-            "--min-size",
-            type=int,
-            default=Config.CLI_DEFAULT_MIN_SIZE,
-            help=f"Minimum size for arrays/strings (default: {Config.CLI_DEFAULT_MIN_SIZE})",
-        )
-
-        parser.add_argument(
-            "--max-size",
-            type=int,
-            default=Config.CLI_DEFAULT_MAX_SIZE,
-            help=f"Maximum size for arrays/strings (default: {Config.CLI_DEFAULT_MAX_SIZE})",
-        )
-
-        # Value constraints
-        parser.add_argument(
-            "--min-value",
-            type=int,
-            default=Config.CLI_DEFAULT_MIN_VALUE,
-            help=f"Minimum value for integers (default: {Config.CLI_DEFAULT_MIN_VALUE})",
-        )
-
-        parser.add_argument(
-            "--max-value",
-            type=int,
-            default=Config.CLI_DEFAULT_MAX_VALUE,
-            help=f"Maximum value for integers (default: {Config.CLI_DEFAULT_MAX_VALUE})",
-        )
-
-        # Type-specific options
-        parser.add_argument(
-            "--sorted", action="store_true", help="Generate sorted arrays"
-        )
-
-        parser.add_argument(
-            "--unique", action="store_true", help="Generate arrays with unique elements"
-        )
-
-        parser.add_argument(
-            "--balanced", action="store_true", help="Generate balanced trees"
-        )
-
-        parser.add_argument(
-            "--bst", action="store_true", help="Generate binary search trees"
-        )
-
-        parser.add_argument(
-            "--connected", action="store_true", help="Generate connected graphs"
-        )
-
-        parser.add_argument(
-            "--directed", action="store_true", help="Generate directed graphs"
-        )
-
-        parser.add_argument(
-            "--weighted", action="store_true", help="Generate weighted graphs"
-        )
-
-        parser.add_argument(
-            "--palindrome", action="store_true", help="Generate palindrome strings"
-        )
-
-        parser.add_argument(
-            "--cycle", action="store_true", help="Generate linked lists with cycles"
-        )
-
-        return parser
-
-    def _get_examples(self) -> str:
-        """Get example usage strings"""
-        return """
-Examples:
-  %(prog)s array -n 10 -e                    # Generate 10 array test cases with edge cases
-  %(prog)s tree -n 5 --balanced              # Generate 5 balanced tree test cases
-  %(prog)s graph -n 3 --connected --weighted # Generate 3 connected weighted graphs
-  %(prog)s string --palindrome -n 10         # Generate 10 palindrome strings
-  %(prog)s edge_cases array                  # Get all edge cases for arrays
-  %(prog)s linked_list --cycle -n 5          # Generate 5 linked lists with cycles
-        """
-
-    def run(self, args: List[str] = None) -> None:
-        """
-        Run the CLI
-
-        Args:
-            args: Command-line arguments (if None, uses sys.argv)
-        """
-        parser = self.create_parser()
-        parsed_args = parser.parse_args(args)
-
-        # Set random seed if provided
-        if parsed_args.seed is not None:
-            random.seed(parsed_args.seed)
-
-        # Generate test cases based on type
-        if parsed_args.type == "edge_cases":
-            test_cases = self._generate_edge_cases_only(parsed_args)
-        else:
-            test_cases = self._generate_test_cases(parsed_args)
-
-        # Output results
-        self._output_results(test_cases, parsed_args)
-
-    def _generate_edge_cases_only(self, args: argparse.Namespace) -> List[Any]:
-        """Generate only edge cases for the specified type"""
-        # Get the subtype if specified (e.g., "edge_cases array")
-        edge_case_methods = {
-            "array": self.edge_gen.get_array_edge_cases,
-            "string": self.edge_gen.get_string_edge_cases,
-            "matrix": self.edge_gen.get_matrix_edge_cases,
-            "tree": self.edge_gen.get_tree_edge_cases,
-            "linked_list": self.edge_gen.get_linked_list_edge_cases,
-            "graph": self.edge_gen.get_graph_edge_cases,
-            "number": self.edge_gen.get_number_edge_cases,
-            "boolean": self.edge_gen.get_boolean_edge_cases,
-        }
-
-        # Default to array if no specific type
-        method = edge_case_methods.get("array")
-        return method()
-
-    def _generate_test_cases(self, args: argparse.Namespace) -> List[Any]:
-        """Generate test cases based on arguments"""
-        test_cases = []
-
-        # Create constraints
-        constraints = Constraints(
-            min_value=args.min_value,
-            max_value=args.max_value,
-            min_length=args.min_size,
-            max_length=args.max_size,
-            is_sorted=args.sorted,
-            is_unique=args.unique,
-        )
-
-        # Add edge cases if requested
-        if args.edge_cases:
-            edge_cases = self._get_edge_cases_for_type(args.type)
-            test_cases.extend(edge_cases)
-
-        # Generate random test cases
-        for _ in range(args.num):
-            test_case = self._generate_single_test_case(args, constraints)
-            test_cases.append(test_case)
-
-        return test_cases
-
-    def _get_edge_cases_for_type(self, data_type: str) -> List[Any]:
-        """Get edge cases for specific data type"""
-        edge_case_map = {
-            "array": self.edge_gen.get_array_edge_cases(),
-            "string": self.edge_gen.get_string_edge_cases(),
-            "matrix": self.edge_gen.get_matrix_edge_cases(),
-            "tree": self.edge_gen.get_tree_edge_cases(),
-            "linked_list": self.edge_gen.get_linked_list_edge_cases(),
-            "graph": self.edge_gen.get_graph_edge_cases(),
-        }
-        return edge_case_map.get(data_type, [])
-
-    def _generate_single_test_case(
-        self, args: argparse.Namespace, constraints: Constraints
-    ) -> Any:
-        """Generate a single test case"""
-        if args.type == "array":
-            gen = IntegerGenerator(args.seed)
-            size = random.randint(constraints.min_length, constraints.max_length)
-            return gen.generate_array(size, constraints)
-
-        elif args.type == "string":
-            gen = StringGenerator(args.seed)
-            if args.palindrome:
-                length = random.randint(constraints.min_length, constraints.max_length)
-                return gen.generate_palindrome(length)
-            else:
-                return gen.generate(None, constraints)
-
-        elif args.type == "matrix":
-            gen = MatrixGenerator(args.seed)
-            rows = random.randint(1, min(20, constraints.max_length))
-            cols = random.randint(1, min(20, constraints.max_length))
-            return gen.generate(rows, cols, constraints)
-
-        elif args.type == "tree":
-            gen = TreeGenerator(args.seed)
-            size = random.randint(1, 50)
-            props = TreeProperties(
-                size=size,
-                balanced=args.balanced,
-                bst=args.bst,
-                min_val=args.min_value,
-                max_val=args.max_value,
-            )
-            tree = gen.generate(props, constraints)
-            # Convert to serializable format
-            return TreeSerializer.to_array(tree)
-
-        elif args.type == "graph":
-            gen = GraphGenerator(args.seed)
-            nodes = random.randint(2, 50)
-            props = GraphProperties(
-                num_nodes=nodes,
-                connected=args.connected,
-                directed=args.directed,
-                weighted=args.weighted,
-            )
-            return gen.generate(props)
-
-        elif args.type == "linked_list":
-            gen = LinkedListGenerator(args.seed)
-            size = random.randint(1, 50)
-            linked_list = gen.generate(size, constraints, has_cycle=args.cycle)
-            # Convert to serializable format
-            return LinkedListSerializer.to_array(linked_list)
-
-        return None
-
-    def _output_results(self, test_cases: List[Any], args: argparse.Namespace) -> None:
-        """Output test cases to file or console"""
-        if args.output:
-            # Save to file
-            with open(args.output, "w") as f:
-                json.dump(test_cases, f, indent=2, default=str)
-            print(f"✅ Generated {len(test_cases)} test cases saved to {args.output}")
-        else:
-            # Print to console
-            print(f"Generated {len(test_cases)} test cases:\n")
-
-            # Show first few test cases
-            display_limit = min(5, len(test_cases))
-            for i, test_case in enumerate(test_cases[:display_limit]):
-                print(f"Test {i + 1}:")
-                self._print_test_case(test_case, args.type)
-
-            if len(test_cases) > display_limit:
-                print(f"\n... and {len(test_cases) - display_limit} more test cases")
-
-    def _print_test_case(self, test_case: Any, data_type: str) -> None:
-        """Print a single test case with appropriate formatting"""
-        if (
-            isinstance(test_case, list)
-            and len(test_case) > Config.CLI_MAX_DISPLAY_LENGTH
-        ):
-            print(
-                f"  {test_case[: Config.CLI_MAX_DISPLAY_LENGTH]}... (length: {len(test_case)})"
-            )
-        elif isinstance(test_case, dict):
-            print(f"  Type: {data_type}")
-            if "num_nodes" in test_case:
-                print(
-                    f"  Nodes: {test_case['num_nodes']}, Edges: {len(test_case.get('edges', []))}"
-                )
-            else:
-                # Print dict with truncation if needed
-                print(f"  {str(test_case)[:200]}...")
-        elif (
-            isinstance(test_case, str)
-            and len(test_case) > Config.CLI_MAX_DISPLAY_LENGTH * 5
-        ):
-            print(
-                f"  '{test_case[: Config.CLI_MAX_DISPLAY_LENGTH * 5]}...' (length: {len(test_case)})"
-            )
-        else:
-            print(f"  {test_case}")
-
-
-class EnhancedCLI:
-    """Enhanced CLI with sophisticated error reporting and user guidance"""
-
-    def __init__(self):
-        self.edge_gen = EdgeCaseGenerator()
         self.runner = TestRunner()
         self.error_reporter = ErrorReporter(self.runner.error_handler)
 
     def create_parser(self) -> argparse.ArgumentParser:
-        """Create and configure argument parser with enhanced options"""
+        """Create and configure argument parser with options"""
         parser = argparse.ArgumentParser(
-            description="🧪 Enhanced Test Case Generator for DSA Problems",
+            description="🧪 Test Case Generator for DSA Problems",
             formatter_class=argparse.RawDescriptionHelpFormatter,
-            epilog=self._get_enhanced_examples(),
+            epilog=self._get_examples(),
         )
 
         # Main arguments
@@ -393,7 +80,7 @@ class EnhancedCLI:
 
         parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
 
-        # Enhanced error reporting options
+        # Error reporting options
         parser.add_argument(
             "--error-report",
             choices=["text", "json", "html"],
@@ -482,7 +169,7 @@ class EnhancedCLI:
         return parser
 
     def run(self, args: List[str] = None) -> None:
-        """Enhanced CLI runner with rich error reporting"""
+        """CLI runner with rich error reporting"""
         parser = self.create_parser()
         parsed_args = parser.parse_args(args)
 
@@ -514,7 +201,7 @@ class EnhancedCLI:
             self._generate_error_report(parsed_args.error_report, parsed_args)
 
     def _run_generation(self, args: argparse.Namespace) -> None:
-        """Run test case generation with enhanced error handling"""
+        """Run test case generation with error handling"""
         start_time = datetime.now()
 
         try:
@@ -526,8 +213,8 @@ class EnhancedCLI:
 
             generation_time = (datetime.now() - start_time).total_seconds()
 
-            # Output results with enhanced reporting
-            self._output_enhanced_results(test_cases, args, generation_time)
+            # Output results with reporting
+            self._output_results(test_cases, args, generation_time)
 
         except Exception as e:
             self._handle_generation_error(e, args)
@@ -550,12 +237,12 @@ class EnhancedCLI:
 
         print(f"🧪 Validating {len(test_cases)} test cases...")
 
-        # Run validation with enhanced error reporting
+        # Run validation with error reporting
         results = self.runner.run_test_suite(
             validator_func, test_cases, progress_callback=self._show_progress
         )
 
-        # Show enhanced validation results
+        # Show validation results
         self._show_validation_results(results, args)
 
     def _run_benchmark(self, args: argparse.Namespace) -> None:
@@ -593,7 +280,7 @@ class EnhancedCLI:
             print(f"   📊 Size {size}: {avg_time * 1000:.2f}ms average")
 
     def _generate_test_cases(self, args: argparse.Namespace) -> List[Any]:
-        """Generate test cases with enhanced error handling"""
+        """Generate test cases with error handling"""
         test_cases = []
 
         # Create constraints with validation
@@ -654,10 +341,10 @@ class EnhancedCLI:
 
         return test_cases
 
-    def _output_enhanced_results(
+    def _output_results(
         self, test_cases: List[Any], args: argparse.Namespace, generation_time: float
     ) -> None:
-        """Output results with enhanced formatting and statistics"""
+        """Output results with formatting and statistics"""
 
         print(f"\n🎉 Generation completed in {generation_time:.2f}s")
         print(f"📋 Generated {len(test_cases)} test cases")
@@ -667,7 +354,7 @@ class EnhancedCLI:
 
         if args.output:
             # Save to file with metadata
-            self._save_enhanced_output(test_cases, args, generation_time)
+            self._save_output(test_cases, args, generation_time)
         else:
             # Display to console with rich formatting
             self._display_console_output(test_cases, args)
@@ -781,15 +468,15 @@ class EnhancedCLI:
                 f"   🔗 Edges: {min(edges)} - {max(edges)} (avg: {sum(edges) / len(edges):.1f})"
             )
 
-    def _save_enhanced_output(
+    def _save_output(
         self, test_cases: List[Any], args: argparse.Namespace, generation_time: float
     ) -> None:
-        """Save test cases with enhanced metadata"""
+        """Save test cases with metadata"""
         output_data = {
             "metadata": {
                 "generated_at": datetime.now().isoformat(),
                 "generation_time_seconds": generation_time,
-                "generator_version": "enhanced_v2",
+                "generator_version": "v1",
                 "total_cases": len(test_cases),
                 "parameters": {
                     "type": args.type,
@@ -815,7 +502,7 @@ class EnhancedCLI:
         try:
             with open(args.output, "w") as f:
                 json.dump(output_data, f, indent=2, default=str)
-            print(f"✅ Enhanced output saved to {args.output}")
+            print(f"✅ Output saved to {args.output}")
             print("📁 File includes metadata, parameters, and error summary")
         except Exception as e:
             print(f"❌ Failed to save output: {e}")
@@ -824,7 +511,7 @@ class EnhancedCLI:
     def _display_console_output(
         self, test_cases: List[Any], args: argparse.Namespace
     ) -> None:
-        """Display test cases to console with enhanced formatting"""
+        """Display test cases to console with formatting"""
         print("\n📋 GENERATED TEST CASES:")
 
         display_limit = min(5, len(test_cases))
@@ -867,8 +554,8 @@ class EnhancedCLI:
             print(f"   💾 {test_case}")
 
     def _show_validation_results(self, results, args: argparse.Namespace) -> None:
-        """Show enhanced validation results"""
-        self.runner.print_enhanced_summary(results)
+        """Show validation results"""
+        self.runner.print_summary(results)
 
         # Additional validation-specific reporting
         if results.passed == results.total:
@@ -1011,10 +698,10 @@ class EnhancedCLI:
 
         return cases
 
-    def _get_enhanced_examples(self) -> str:
-        """Get enhanced example usage strings"""
+    def _get_examples(self) -> str:
+        """Get example usage strings"""
         return """
-🧪 Enhanced Examples:
+🧪 Examples:
 
 Basic Generation:
   %(prog)s array -n 10 -e                    # Generate arrays with edge cases
@@ -1045,6 +732,7 @@ Advanced Options:
             "number": self.edge_gen.get_number_edge_cases,
             "boolean": self.edge_gen.get_boolean_edge_cases,
         }
+
         method = edge_case_methods.get("array")
         return method()
 
@@ -1063,7 +751,7 @@ Advanced Options:
     def _generate_single_test_case(
         self, args: argparse.Namespace, constraints: Constraints
     ) -> Any:
-        """Generate single test case - keeping original functionality but with enhanced error handling"""
+        """Generate single test case - keeping original functionality but with error handling"""
         try:
             if args.type == "array":
                 gen = IntegerGenerator(args.seed)
@@ -1123,15 +811,15 @@ Advanced Options:
 
 
 def main(args=None):
-    """Enhanced main entry point"""
-    cli = EnhancedCLI()
+    """Main entry point"""
+    cli = CLI()
 
     if args is None:
         args = sys.argv[1:]
 
     if len(args) == 0:
         # No arguments provided, show usage
-        print("🧪 Enhanced Test Case Generator for DSA Problems")
+        print("🧪 Test Case Generator for DSA Problems")
         print("=" * 50)
         print("\n🚀 Quick Start:")
         print(
@@ -1141,7 +829,7 @@ def main(args=None):
         print("  python -m testgen tree --balanced -n 3     # Generate balanced trees")
         print("\n🔧 Available Types: array, string, matrix, tree, graph, linked_list")
         print("🆘 For help: python -m testgen -h")
-        print("\n💡 Enhanced Features:")
+        print("\n💡 Features:")
         print("  ✅ Memory-efficient generation with large ranges")
         print("  ✅ Rich error handling with context and suggestions")
         print("  ✅ Progress indicators and detailed analysis")
@@ -1149,7 +837,7 @@ def main(args=None):
         return
 
     try:
-        # Run the enhanced CLI with arguments
+        # Run the CLI with arguments
         cli.run(args)
     except KeyboardInterrupt:
         print("\n\n⏹️  Operation cancelled by user")

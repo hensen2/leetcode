@@ -57,20 +57,6 @@ class IntegerGenerator(BaseGenerator):
         if size == 0:
             return []
 
-        # Generate unique values if required
-        # if constraints.is_unique:
-        #     value_range = constraints.max_value - constraints.min_value + 1
-        #     if value_range < size:
-        #         raise ValueError(
-        #             f"Cannot generate {size} unique values in range "
-        #             f"[{constraints.min_value}, {constraints.max_value}]"
-        #         )
-        #     values = random.sample(
-        #         range(constraints.min_value, constraints.max_value + 1), size
-        #     )
-        # else:
-        #     values = [self.generate(constraints) for _ in range(size)]
-        # FIXED: Memory-efficient unique value generation
         if constraints.is_unique:
             values = self._generate_unique_values(size, constraints)
         else:
@@ -207,7 +193,11 @@ class StringGenerator(BaseGenerator):
         if constraints is None:
             constraints = Constraints()
 
-        if length is None:
+        if (
+            length is None
+            or length < constraints.min_length
+            or length > constraints.max_length
+        ):
             length = random.randint(
                 max(0, constraints.min_length), constraints.max_length
             )
@@ -316,6 +306,8 @@ class MatrixGenerator(BaseGenerator):
                     val = random.randint(1, 10)
                     matrix[i][j] = val
                     matrix[j][i] = val
+        elif matrix_type == "zero":
+            matrix = [[0 for j in range(cols)] for i in range(rows)]
         else:  # random
             matrix = [[random.randint(1, 10) for _ in range(cols)] for _ in range(rows)]
 
@@ -669,5 +661,7 @@ class LinkedListGenerator(BaseGenerator):
                 cycle_position = random.randint(0, len(nodes) - 2)
             if 0 <= cycle_position < len(nodes):
                 nodes[-1].next = nodes[cycle_position]
+        elif has_cycle and len(nodes) == 1:
+            nodes[0].next = nodes[0]
 
         return dummy.next

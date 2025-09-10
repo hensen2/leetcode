@@ -17,7 +17,7 @@ from testgen.core.models import Constraints
 class TestMemoryEfficiency:
     """Test memory-efficient generation strategies"""
 
-    def test_small_range_uses_sample(self):
+    def test_small_range_random_sample(self):
         """Small ranges should use random.sample (existing behavior)"""
         generator = IntegerGenerator()
         constraints = Constraints(
@@ -34,7 +34,7 @@ class TestMemoryEfficiency:
         assert all(1 <= x <= 1000 for x in result)
 
     @pytest.mark.memory
-    def test_large_range_small_sample_memory_efficient(self):
+    def test_large_range_small_sample(self):
         """Large range, small sample should not consume excessive memory"""
         generator = IntegerGenerator()
         constraints = Constraints(
